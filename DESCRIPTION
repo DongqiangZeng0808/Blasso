@@ -4,15 +4,15 @@ Title: Using LASSO and Bootstrapping algorithm to evaluate prognostic value of f
 Version: 0.1.0
 Author: Dongqiang Zeng
 Maintainer: The package maintainer <dongqiangzeng0808@gmail.com>
-Description: More about what it does (maybe more than one line)
+Description: More about what it does (https://github.com/DongqiangZeng0808/Blasso)
     Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+License: MIT
 Encoding: UTF-8
 LazyData: true
-Imports: 
-    survival,
+Depends:
     glmnet,
-    tibble,
     ggplot2,
-    grDevices
+    tibble,
+    survival
 RoxygenNote: 6.1.1
+

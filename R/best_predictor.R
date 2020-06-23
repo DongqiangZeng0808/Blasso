@@ -14,12 +14,12 @@
 #' @param features_id column name of feature matrix
 #' @param propotion propotion of patients in each bootstraping iteration
 #' @param nfolds folds to perform cross validataion in LASSO
-
+#' @author Dongqiang Zeng
 #' @return variables with frequency
 #' @export
 #'
 #' @examples
-#' res<-best_feature(target = target, features = features,status = "status",time = "time")
+# res<-best_predictor(target = target, features = features,status = "status",time = "time")
 
 best_predictor<-function(target,features,status,time,target_id = "ID",features_id ="ID",
                        permutation = 1000,propotion = 0.8,nfolds = 10,plot_vars = 20){
@@ -27,15 +27,20 @@ best_predictor<-function(target,features,status,time,target_id = "ID",features_i
   tar_fea<-merge(target[,c(target_id,status,time)],features,by.x = target_id,by.y = features_id,all = F)
   tar_fea<-tibble:: column_to_rownames(tar_fea,var = target_id )
 
-  res<-as.character()
+  res<-as.character(NULL)
   for(i in 1:permutation){
     index<-floor(runif(floor(dim(tar_fea)[1])*propotion,1,dim(tar_fea)[1]))
 
     rt<-as.matrix(tar_fea[index,1:2])
     fea_matrix<-as.matrix(as.data.frame(tar_fea[index,3:ncol(tar_fea)]))
-    fit2<-glmnet:: cv.glmnet(fea_matrix, rt, family="cox", maxit = 1000,nfolds = nfolds,alpha=1)
-    myCoefs <- coef(fit2, s="lambda.min")
-    feas<-myCoefs@Dimnames[[1]][which(myCoefs != 0 )]
+    fit<-glmnet::cv.glmnet(fea_matrix, rt, family="cox",
+                           type.measure = "deviance", maxit = 1000,nfolds = nfolds,alpha=1)
+
+    coefs <- coef(fit$glmnet.fit, s=fit$lambda.min)
+    # active.coef <- coefs[which(coefs[,1]!=0)]
+    feas <- row.names(coefs)[which(coefs[,1]!=0)]
+    # myCoefs <-stats::coef(fit, s="lambda.min")
+    # feas<-myCoefs@Dimnames[[1]][which(myCoefs!=0 )]
     res<-append(res,feas)
   }
   res<-as.data.frame(sort(table(res),decreasing = T))

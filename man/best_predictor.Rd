@@ -33,6 +33,6 @@ variables with frequency
 \description{
 Using bootstraping and LASSO algorithm to choose best prognostic features
 }
-\examples{
-res<-best_feature(target = target, features = features,status = "status",time = "time")
+\author{
+Dongqiang Zeng
 }
