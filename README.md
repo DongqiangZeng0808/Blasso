@@ -14,7 +14,7 @@ help('best_predictor')
 Example
 
 ``` r
-res<-best_feature(target = target, features = features,status = "status",time = "time")
+res<-best_predictor(target = target, features = features,status = "status",time = "time")
 head(res)
 ```
 
