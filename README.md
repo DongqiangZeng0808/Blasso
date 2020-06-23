@@ -8,6 +8,7 @@ devtools::install_github("DongqiangZeng0808/Blasso")
 Main documentation is on the `best_predictor` function in the package:
 
 ``` r
+library("Blasso")
 help('best_predictor')
 ```
 
