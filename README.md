@@ -16,6 +16,7 @@ Example
 ``` r
 res<-best_feature(target = target, features = features,status = "status",time = "time")
 head(res)
+```
 
 Citation
 ---------
