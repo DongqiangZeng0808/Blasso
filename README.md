@@ -15,8 +15,30 @@ help('best_predictor')
 Example
 
 ``` r
-res<-best_predictor(target = target, features = features,status = "status",time = "time")
+Blasso::features[1:5,1:3]
+
+#               ID  Glycosphosphatidylinositol_PCA   Macrophage_M1_cibersort
+# 1 SAM00b9e5c52da9                     -0.3791156              -0.9651426
+# 2 SAM0257bbbbd388                      1.3471887              -0.8690076
+# 3 SAM025b45c27e05                     -0.1356366              -0.9915367
+# 4 SAM032c642382a7                     -1.5168052               0.8050212
+# 5 SAM04c589eb3fb3                     -3.0750685               0.6753930
+
+Blasso::target[1:5,]
+#                ID status       time
+# 1 SAM00b9e5c52da9      1  1.9055441
+# 2 SAM0257bbbbd388      1 15.6386037
+# 3 SAM025b45c27e05      1  8.7720739
+# 4 SAM032c642382a7      1  2.4969199
+# 5 SAM04c589eb3fb3      0  0.6899384
+res<-best_predictor(target = target, # prognostic variables
+                    features = features, #feature matrix
+                    status = "status", #name of event in 'target' object
+                    time = "time",  #name of follow up time in 'target' object
+                    permutation = 1000, # iterations of LASSO cox regression
+                    plot_vars = 20)   # visualize result by ggplot2
 head(res)
+###################################
 ```
 
 Citation
