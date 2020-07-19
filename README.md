@@ -37,8 +37,6 @@ res<-best_predictor(target = target, # prognostic variables
                     time = "time",  #name of follow up time in 'target' object
                     permutation = 1000, # iterations of LASSO cox regression
                     plot_vars = 20)   # visualize result by ggplot2
-head(res)
-###################################
 ```
 
 Citation
