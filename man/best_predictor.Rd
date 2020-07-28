@@ -4,9 +4,18 @@
 \alias{best_predictor}
 \title{Using bootstraping and LASSO algorithm to choose best prognostic features}
 \usage{
-best_predictor(target, features, status, time, target_id = "ID",
-  features_id = "ID", permutation = 1000, propotion = 0.8,
-  nfolds = 10, plot_vars = 20)
+best_predictor(
+  target,
+  features,
+  status,
+  time,
+  target_id = "ID",
+  features_id = "ID",
+  permutation = 1000,
+  propotion = 0.8,
+  nfolds = 10,
+  plot_vars = 20
+)
 }
 \arguments{
 \item{target}{Data frame contains patient identifer, survival time and survival event = 0/1}
