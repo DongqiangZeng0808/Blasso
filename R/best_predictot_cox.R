@@ -1,8 +1,6 @@
 
 
 
-
-
 #' Using bootstraping and LASSO algorithm to choose best prognostic features
 #'
 #' @param target_data Data frame contains patient identifer, survival time and survival event = 0/1
@@ -14,7 +12,9 @@
 #' @param features_id column name of feature matrix
 #' @param propotion propotion of patients in each bootstraping iteration
 #' @param nfolds folds to perform cross validataion in LASSO
-#' @param palette plotting palette, using `RColorBrewer::brewer.pal()` 
+#' @param palette plotting palette, using `RColorBrewer::brewer.pal()`
+#' @param show_progress show progress bar
+#'
 #' @author Dongqiang Zeng
 #' @return variables with frequency
 #' @export
@@ -25,28 +25,30 @@
 # res<-best_predictor_cox(target_data = target, features = features,status = "status",time = "time",permutation =100)
 
 best_predictor_cox<-function(target_data,features,status,time,target_data_id = "ID",features_id ="ID",
-                       permutation = 1000,propotion = 0.8,nfolds = 10,plot_vars = 20,palette = "Blues"){
+                       permutation = 1000,propotion = 0.8,nfolds = 10,plot_vars = 20,palette = "Blues",show_progress = TRUE){
 
   tar_fea<-merge(target_data[,c(target_data_id,status,time)],features,by.x = target_data_id,by.y = features_id,all = F)
   tar_fea<-tibble:: column_to_rownames(tar_fea,var = target_data_id )
-  
+
   #progress_bar
   pb <-progress:: progress_bar$new(
     format = "  Progressing [:bar] :percent in :elapsed",
     total = permutation, clear = FALSE, width= 100)
-  
+
   res<-as.character(NULL)
   for(i in 1:permutation){
-    
-    pb$tick()
-    Sys.sleep(1 / 100)
-    
+
+    if(show_progress){
+      pb$tick()
+      Sys.sleep(1 / 100)
+    }
+
     index<-floor(runif(floor(dim(tar_fea)[1])*propotion,1,dim(tar_fea)[1]))
 
     rt<-as.matrix(tar_fea[index,1:2])
     fea_matrix<-as.matrix(as.data.frame(tar_fea[index,3:ncol(tar_fea)]))
     fit<-glmnet::cv.glmnet(fea_matrix, rt, family="cox",
-                           type.measure = "deviance", 
+                           type.measure = "deviance",
                            maxit = 1000,nfolds = nfolds,alpha=1)
 
     coefs <- coef(fit$glmnet.fit, s=fit$lambda.min)
@@ -57,7 +59,7 @@ best_predictor_cox<-function(target_data,features,status,time,target_data_id = "
     res<-append(res,feas)
   }
   res<-as.data.frame(sort(table(res),decreasing = T))
-  
+
   RColorBrewer::display.brewer.all()
   # Define the number of colors you want
   colors <-grDevices::colorRampPalette(RColorBrewer:: brewer.pal(8,palette))(plot_vars)
@@ -74,7 +76,7 @@ best_predictor_cox<-function(target_data,features,status,time,target_data_id = "
 
   ggsave(pp,filename ="Frequency_of_variables_choosen_by_lasso.pdf",
          width =5+0.1*length(plot_vars) ,height =6.5 )
-  
+
   res<-list("res" = res,"plot" = pp)
   return(res)
 }

@@ -1,49 +1,10329 @@
-# Blasso
-- Integrating LASSO cox regression and bootstrapping algorithm to find best prognostic features
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+# mydb： Integrating LASSO cox regression and bootstrapping algorithm to find best prognostic features
+
+\#\#The package is not yet on CRAN. You can install from Github:
 
 ``` r
-# install.packages("devtools")
-devtools::install_github("DongqiangZeng0808/Blasso")
+
+#if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+#if (!requireNamespace("Blasso", quietly = TRUE))  devtools::install_github("DongqiangZeng0808/Blasso")
 ```
-Main documentation is on the `best_predictor` function in the package:
+
+\#\#Loading packages,Main documentation is on the `best_predictor_cox`
+and `best_predictor_binominal` function in the package:
 
 ``` r
-library("Blasso")
-help('best_predictor')
+
+library(Blasso) 
+help("best_predictor_cox")
+help("best_predictor_binomial")
 ```
 
-Example
+\#\#Supplementary data
 
 ``` r
-Blasso::features[1:5,1:3]
+data("target")
+head(target)
+#>                ID status       time
+#> 1 SAM00b9e5c52da9      1  1.9055441
+#> 2 SAM0257bbbbd388      1 15.6386037
+#> 3 SAM025b45c27e05      1  8.7720739
+#> 4 SAM032c642382a7      1  2.4969199
+#> 5 SAM04c589eb3fb3      0  0.6899384
+#> 6 SAM0571f17f4045      1  4.5338809
 
-#               ID  Glycosphosphatidylinositol_PCA   Macrophage_M1_cibersort
-# 1 SAM00b9e5c52da9                     -0.3791156              -0.9651426
-# 2 SAM0257bbbbd388                      1.3471887              -0.8690076
-# 3 SAM025b45c27e05                     -0.1356366              -0.9915367
-# 4 SAM032c642382a7                     -1.5168052               0.8050212
-# 5 SAM04c589eb3fb3                     -3.0750685               0.6753930
-
-Blasso::target[1:5,]
-#                ID status       time
-# 1 SAM00b9e5c52da9      1  1.9055441
-# 2 SAM0257bbbbd388      1 15.6386037
-# 3 SAM025b45c27e05      1  8.7720739
-# 4 SAM032c642382a7      1  2.4969199
-# 5 SAM04c589eb3fb3      0  0.6899384
-res<-best_predictor(target = target, # prognostic variables
-                    features = features, #feature matrix
-                    status = "status", #name of event in 'target' object
-                    time = "time",  #name of follow up time in 'target' object
-                    permutation = 1000, # iterations of LASSO cox regression
-                    plot_vars = 20)   # visualize result by ggplot2
+data("features")
+features[1:5,1:5]
+#>                ID Glycosphosphatidylinositol_PCA Macrophage_M1_cibersort
+#> 1 SAM00b9e5c52da9                     -0.3791156              -0.9651426
+#> 2 SAM0257bbbbd388                      1.3471887              -0.8690076
+#> 3 SAM025b45c27e05                     -0.1356366              -0.9915367
+#> 4 SAM032c642382a7                     -1.5168052               0.8050212
+#> 5 SAM04c589eb3fb3                     -3.0750685               0.6753930
+#>   GO_CATECHOLAMINE_TRANSPORT GO_DOPAMINE_TRANSPORT
+#> 1                -0.05571328            -0.2575771
+#> 2                -0.27535773            -0.3974832
+#> 3                 0.74345430             0.5631046
+#> 4                -1.69420060            -1.4923073
+#> 5                -1.58320438            -1.3433413
 ```
 
-Citation
----------
-Zeng D, Ye Z, Wu J, Zhou R, Fan X, Wang G, Huang Y, Wu J, Sun H, Wang M, Bin J, Liao Y, Li N, Shi M, Liao W. Macrophage correlates with immunophenotype and predicts anti-PD-L1 response of urothelial cancer. Theranostics 2020; 10(15):7002-7014. [doi:10.7150/thno.46176](http://www.thno.org/v10p7002.htm)
+\#\#Example-1: Cox-regression model
 
-Contact
----------
-E-mail any questions to dongqiangzeng0808@gmail.com
+``` r
 
+res<-best_predictor_cox(target_data = target, 
+                        features = features, 
+                        status = "status",
+                        time = "time",
+                        nfolds = 10,
+                        permutation = 300,
+                        show_progress = FALSE)
+```
+
+<img src="man/figuresunnamed-chunk-5-1.png" width="100%" />
+
+``` r
+head(res$res)
+#>                                                  res Freq
+#> 1                            Macrophage_M1_cibersort  263
+#> 2                          GO_RESPONSE_TO_COBALT_ION  245
+#> 3           GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  214
+#> 4              GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  212
+#> 5 GO_IMIDAZOLE_CONTAINING_COMPOUND_METABOLIC_PROCESS  201
+#> 6                 Dendritic_cell_activated_cibersort  199
+```
+
+\#\#Example-2: Binomial model
+
+``` r
+
+res<-best_predictor_binomial(target_data = target, 
+                             features = features,
+                             response = "status",
+                             nfolds = 10,
+                             permutation = 300,
+                             show_progress = FALSE)
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -47); Convergence for 47th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -47); Convergence for 47th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -74); Convergence for 74th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -47); Convergence for 47th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -46); Convergence for 46th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -47); Convergence for 47th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -47); Convergence for 47th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -74); Convergence for 74th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -74); Convergence for 74th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -76); Convergence for 76th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -74); Convergence for 74th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -80); Convergence for 80th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -79); Convergence for 79th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -79); Convergence for 79th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -74); Convergence for 74th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -74); Convergence for 74th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -74); Convergence for 74th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -47); Convergence for 47th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -46); Convergence for 46th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -48); Convergence for 48th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -47); Convergence for 47th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -47); Convergence for 47th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -45); Convergence for 45th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -48); Convergence for 48th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -48); Convergence for 48th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -76); Convergence for 76th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -46); Convergence for 46th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -77); Convergence for 77th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -74); Convergence for 74th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -48); Convergence for 48th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -77); Convergence for 77th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -74); Convergence for 74th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -74); Convergence for 74th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -51); Convergence for 51th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -75); Convergence for 75th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -77); Convergence for 77th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -73); Convergence for 73th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -49); Convergence for 49th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -46); Convergence for 46th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -52); Convergence for 52th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -50); Convergence for 50th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -46); Convergence for 46th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -72); Convergence for 72th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -71); Convergence for 71th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -53); Convergence for 53th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -66); Convergence for 66th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -67); Convergence for 67th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -60); Convergence for 60th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -62); Convergence for 62th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -61); Convergence for 61th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -56); Convergence for 56th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -55); Convergence for 55th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -54); Convergence for 54th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -57); Convergence for 57th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -58); Convergence for 58th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -68); Convergence for 68th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -70); Convergence for 70th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+
+#> Warning: from glmnet Fortran code (error code -64); Convergence for 64th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -59); Convergence for 59th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -65); Convergence for 65th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -69); Convergence for 69th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: from glmnet Fortran code (error code -63); Convergence for 63th lambda
+#> value not reached after maxit=1000 iterations; solutions for larger lambdas
+#> returned
+#> Warning: Ignoring unknown parameters: binwidth, bins, pad
+```
+
+<img src="man/figuresunnamed-chunk-6-1.png" width="100%" />
+
+``` r
+head(res$res)
+#>                                           res Freq
+#> 2                     Macrophage_M1_cibersort  279
+#> 3                   GO_RESPONSE_TO_COBALT_ION  274
+#> 4          Dendritic_cell_activated_cibersort  238
+#> 5 GO_SOMATIC_STEM_CELL_POPULATION_MAINTENANCE  238
+#> 6    GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  237
+#> 7       GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  232
+```
+
+\#\#Session Info
+
+``` r
+sessionInfo()
+#> R version 3.6.3 (2020-02-29)
+#> Platform: x86_64-w64-mingw32/x64 (64-bit)
+#> Running under: Windows 10 x64 (build 18362)
+#> 
+#> Matrix products: default
+#> 
+#> locale:
+#> [1] LC_COLLATE=Chinese (Simplified)_China.936 
+#> [2] LC_CTYPE=Chinese (Simplified)_China.936   
+#> [3] LC_MONETARY=Chinese (Simplified)_China.936
+#> [4] LC_NUMERIC=C                              
+#> [5] LC_TIME=Chinese (Simplified)_China.936    
+#> 
+#> attached base packages:
+#> [1] stats     graphics  grDevices utils     datasets  methods   base     
+#> 
+#> other attached packages:
+#> [1] Blasso_0.1.0       progress_1.2.2     RColorBrewer_1.1-2 survival_3.2-3    
+#> [5] tibble_3.0.3       ggplot2_3.3.2      glmnet_4.0-2       Matrix_1.2-18     
+#> 
+#> loaded via a namespace (and not attached):
+#>  [1] compiler_3.6.3    pillar_1.4.6      prettyunits_1.1.1 iterators_1.0.12 
+#>  [5] tools_3.6.3       digest_0.6.25     evaluate_0.14     lifecycle_0.2.0  
+#>  [9] gtable_0.3.0      lattice_0.20-41   pkgconfig_2.0.3   rlang_0.4.7      
+#> [13] foreach_1.5.0     yaml_2.2.1        xfun_0.16         withr_2.2.0      
+#> [17] stringr_1.4.0     dplyr_1.0.0       knitr_1.29        hms_0.5.3        
+#> [21] generics_0.0.2    vctrs_0.3.2       grid_3.6.3        tidyselect_1.1.0 
+#> [25] glue_1.4.2        R6_2.4.1          rmarkdown_2.3     farver_2.0.3     
+#> [29] purrr_0.3.4       magrittr_1.5      scales_1.1.1      codetools_0.2-16 
+#> [33] htmltools_0.5.0   ellipsis_0.3.1    splines_3.6.3     shape_1.4.4      
+#> [37] colorspace_1.4-1  labeling_0.3      stringi_1.4.6     munsell_0.5.0    
+#> [41] crayon_1.3.4
+```
+
+References Zeng D, Ye Z, Wu J, Zhou R, Fan X, Wang G, Huang Y, Wu J, Sun
+H, Wang M, Bin J, Liao Y, Li N, Shi M, Liao W. Macrophage correlates
+with immunophenotype and predicts anti-PD-L1 response of urothelial
+cancer. Theranostics 2020; 10(15):7002-7014.
+[doi:10.7150/thno.46176](http://www.thno.org/v10p7002.htm) ——— Contact:
+E-mail any questions to <dongqiangzeng0808@gmail.com>

@@ -1,6 +1,6 @@
 Package: Blasso
 Type: Package
-Title: Using LASSO and Bootstrapping algorithm to evaluate prognostic value of features
+Title: Using LASSO and Bootstrapping algorithm to evaluate predictive value of model
 Version: 0.1.0
 Author: Dongqiang Zeng
 Maintainer: The package maintainer <dongqiangzeng0808@gmail.com>
@@ -13,5 +13,7 @@ Depends:
     glmnet,
     ggplot2,
     tibble,
-    survival
+    survival,
+    RColorBrewer,
+    progress
 RoxygenNote: 7.1.1
