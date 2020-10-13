@@ -5,36 +5,49 @@
 
 #' Using bootstraping and LASSO algorithm to choose best prognostic features
 #'
-#' @param target Data frame contains patient identifer, survival time and survival event = 0/1
+#' @param target_data Data frame contains patient identifer, survival time and survival event = 0/1
 #' @param features Data frame contains patient identifer and variables after feature engineering
 #' @param permutation times of iteration
 #' @param status column name of survival event
 #' @param time column name of survival time
-#' @param target_id column name of phenotype data
+#' @param target_data_id column name of phenotype data
 #' @param features_id column name of feature matrix
 #' @param propotion propotion of patients in each bootstraping iteration
 #' @param nfolds folds to perform cross validataion in LASSO
+#' @param palette plotting palette, using `RColorBrewer::brewer.pal()` 
 #' @author Dongqiang Zeng
 #' @return variables with frequency
 #' @export
 #'
 #' @examples
-# res<-best_predictor(target = target, features = features,status = "status",time = "time")
+#' data("target")
+#' data("features")
+# res<-best_predictor_cox(target_data = target, features = features,status = "status",time = "time",permutation =100)
 
-best_predictor<-function(target,features,status,time,target_id = "ID",features_id ="ID",
-                       permutation = 1000,propotion = 0.8,nfolds = 10,plot_vars = 20){
+best_predictor_cox<-function(target_data,features,status,time,target_data_id = "ID",features_id ="ID",
+                       permutation = 1000,propotion = 0.8,nfolds = 10,plot_vars = 20,palette = "Blues"){
 
-  tar_fea<-merge(target[,c(target_id,status,time)],features,by.x = target_id,by.y = features_id,all = F)
-  tar_fea<-tibble:: column_to_rownames(tar_fea,var = target_id )
-
+  tar_fea<-merge(target_data[,c(target_data_id,status,time)],features,by.x = target_data_id,by.y = features_id,all = F)
+  tar_fea<-tibble:: column_to_rownames(tar_fea,var = target_data_id )
+  
+  #progress_bar
+  pb <-progress:: progress_bar$new(
+    format = "  Progressing [:bar] :percent in :elapsed",
+    total = permutation, clear = FALSE, width= 100)
+  
   res<-as.character(NULL)
   for(i in 1:permutation){
+    
+    pb$tick()
+    Sys.sleep(1 / 100)
+    
     index<-floor(runif(floor(dim(tar_fea)[1])*propotion,1,dim(tar_fea)[1]))
 
     rt<-as.matrix(tar_fea[index,1:2])
     fea_matrix<-as.matrix(as.data.frame(tar_fea[index,3:ncol(tar_fea)]))
     fit<-glmnet::cv.glmnet(fea_matrix, rt, family="cox",
-                           type.measure = "deviance", maxit = 1000,nfolds = nfolds,alpha=1)
+                           type.measure = "deviance", 
+                           maxit = 1000,nfolds = nfolds,alpha=1)
 
     coefs <- coef(fit$glmnet.fit, s=fit$lambda.min)
     # active.coef <- coefs[which(coefs[,1]!=0)]
@@ -44,9 +57,10 @@ best_predictor<-function(target,features,status,time,target_id = "ID",features_i
     res<-append(res,feas)
   }
   res<-as.data.frame(sort(table(res),decreasing = T))
-
+  
+  RColorBrewer::display.brewer.all()
   # Define the number of colors you want
-  colors <-grDevices::colorRampPalette(brewer.pal(8, "Blues"))(plot_vars)
+  colors <-grDevices::colorRampPalette(RColorBrewer:: brewer.pal(8,palette))(plot_vars)
   colors<-rev(colors)
   pp<-ggplot(res[1:plot_vars,], aes(fill=res, y=Freq, x=res)) +
     geom_histogram( stat="identity") +
@@ -60,7 +74,8 @@ best_predictor<-function(target,features,status,time,target_id = "ID",features_i
 
   ggsave(pp,filename ="Frequency_of_variables_choosen_by_lasso.pdf",
          width =5+0.1*length(plot_vars) ,height =6.5 )
-
+  
+  res<-list("res" = res,"plot" = pp)
   return(res)
 }
 
