@@ -5,14 +5,14 @@
 
 
 
-#' Using bootstraping and LASSO algorithm to choose best predictive features
+#' Using bootstrapping and LASSO algorithm to choose best predictive features
 #'
-#' @param target_data Data frame contains patient identifer, and target_data
-#' @param features Data frame contains patient identifer and variables after feature engineering
+#' @param target_data Data frame contains patient identifier, and target_data
+#' @param features Data frame contains patient identifier and variables after feature engineering
 #' @param target_data_id column name of phenotype data
 #' @param features_id column name of feature matrix
 #' @param permutation times of iteration
-#' @param propotion propotion of patients in each boostraping iteration
+#' @param propotion proportion of patients in each bootstrapping iteration
 #' @param nfolds folds to perform cross validation in LASSO
 #' @param plot_vars plotting important variables
 #' @param response binary variables
@@ -68,7 +68,7 @@ best_predictor_binomial<-function(target_data,response = "response",
     res<-res[-which(res$res=="(Intercept)"),]
   }
   # Define the number of colors you want
-  RColorBrewer::display.brewer.all()
+  # RColorBrewer::display.brewer.all()
   colors <-grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, palette))(plot_vars)
   colors<-rev(colors)
   pp<-ggplot(res[1:plot_vars,], aes(fill=res, y=Freq, x=res)) +
@@ -81,9 +81,9 @@ best_predictor_binomial<-function(target_data,response = "response",
           axis.text.x= element_text(face="plain",size=7,angle=60,hjust = 1,color="black"))+
     scale_fill_manual(values = colors)+theme(legend.position = "none")
 
-  ggsave(pp,filename ="Frequency_of_variables_choosen_by_lasso.pdf",
-         width =5+0.1*length(plot_vars) ,height =6.5 )
-
+  # ggsave(pp,filename ="Frequency_of_variables_choosen_by_lasso.pdf",
+  #        width =5+0.1*length(plot_vars) ,height =6.5 )
+  pp
   res<-list("res" = res,"plot" = pp)
   return(res)
 }

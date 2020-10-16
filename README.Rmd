@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# mydb： Integrating LASSO cox regression and bootstrapping algorithm to find best prognostic features
+# Blasso： Integrating LASSO cox regression and bootstrapping algorithm to find best prognostic features
 
 
 ##The package is not yet on CRAN. You can install from Github:
@@ -45,7 +45,7 @@ features[1:5,1:5]
 
 ```
 
-##Example-1: Cox-regression model
+##Usage-1: Cox-regression model
 
 ```{r,message=FALSE,warning=FALSE}
 
@@ -61,9 +61,9 @@ head(res$res)
 ```
 
 
-##Example-2: Binomial model
+##Usage-2: Binomial model
 
-```{r,message=FALSE}
+```{r,message=FALSE,warning=FALSE}
 
 res<-best_predictor_binomial(target_data = target, 
                              features = features,
@@ -82,8 +82,8 @@ sessionInfo()
 ```
 
 
-References
-Zeng D, Ye Z, Wu J, Zhou R, Fan X, Wang G, Huang Y, Wu J, Sun H, Wang M, Bin J, Liao Y, Li N, Shi M, Liao W. Macrophage correlates with immunophenotype and predicts anti-PD-L1 response of urothelial cancer. Theranostics 2020; 10(15):7002-7014. [doi:10.7150/thno.46176](http://www.thno.org/v10p7002.htm)
+##References
+Zeng D, Ye Z, Wu J, Zhou R, Fan X, Wang G, Huang Y, Wu J, Sun H, Wang M, Bin J, Liao Y, Li N, Shi M, Liao W. Macrophage correlates with immunophenotype and predicts anti-PD-L1 response of urothelial cancer. Theranostics 2020; 10(15):7002-7014. [doi:10.7150/thno.46176](http://www.thno.org/v10p7002.html)
 
 ---------
 Contact:

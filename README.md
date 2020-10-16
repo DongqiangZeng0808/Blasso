@@ -1,14 +1,14 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# mydb： Integrating LASSO cox regression and bootstrapping algorithm to find best prognostic features
+# Blasso： Integrating LASSO cox regression and bootstrapping algorithm to find best prognostic features
 
 \#\#The package is not yet on CRAN. You can install from Github:
 
 ``` r
 
-#if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
-#if (!requireNamespace("Blasso", quietly = TRUE))  devtools::install_github("DongqiangZeng0808/Blasso")
+if (!requireNamespace("devtools", quietly = TRUE)) install.packages("devtools")
+if (!requireNamespace("Blasso", quietly = TRUE))  devtools::install_github("DongqiangZeng0808/Blasso")
 ```
 
 \#\#Loading packages,Main documentation is on the `best_predictor_cox`
@@ -50,7 +50,7 @@ features[1:5,1:5]
 #> 5                -1.58320438            -1.3433413
 ```
 
-\#\#Example-1: Cox-regression model
+\#\#Usage-1: Cox-regression model
 
 ``` r
 
@@ -68,15 +68,15 @@ res<-best_predictor_cox(target_data = target,
 ``` r
 head(res$res)
 #>                                                  res Freq
-#> 1                            Macrophage_M1_cibersort  263
-#> 2                          GO_RESPONSE_TO_COBALT_ION  245
-#> 3           GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  214
-#> 4              GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  212
-#> 5 GO_IMIDAZOLE_CONTAINING_COMPOUND_METABOLIC_PROCESS  201
-#> 6                 Dendritic_cell_activated_cibersort  199
+#> 1                            Macrophage_M1_cibersort  267
+#> 2                          GO_RESPONSE_TO_COBALT_ION  253
+#> 3              GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  206
+#> 4           GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  200
+#> 5                 Dendritic_cell_activated_cibersort  195
+#> 6 GO_IMIDAZOLE_CONTAINING_COMPOUND_METABOLIC_PROCESS  192
 ```
 
-\#\#Example-2: Binomial model
+\#\#Usage-2: Binomial model
 
 ``` r
 
@@ -86,17 +86,19 @@ res<-best_predictor_binomial(target_data = target,
                              nfolds = 10,
                              permutation = 300,
                              show_progress = FALSE)
+```
 
+<img src="man/figuresunnamed-chunk-6-1.png" width="100%" />
 
 ``` r
 head(res$res)
 #>                                           res Freq
-#> 2                     Macrophage_M1_cibersort  279
-#> 3                   GO_RESPONSE_TO_COBALT_ION  274
-#> 4          Dendritic_cell_activated_cibersort  238
-#> 5 GO_SOMATIC_STEM_CELL_POPULATION_MAINTENANCE  238
-#> 6    GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  237
-#> 7       GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  232
+#> 2                     Macrophage_M1_cibersort  281
+#> 3                   GO_RESPONSE_TO_COBALT_ION  278
+#> 4    GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  239
+#> 5 GO_SOMATIC_STEM_CELL_POPULATION_MAINTENANCE  237
+#> 6       GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  232
+#> 7          Dendritic_cell_activated_cibersort  226
 ```
 
 \#\#Session Info
@@ -124,22 +126,29 @@ sessionInfo()
 #> [5] tibble_3.0.3       ggplot2_3.3.2      glmnet_4.0-2       Matrix_1.2-18     
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] compiler_3.6.3    pillar_1.4.6      prettyunits_1.1.1 iterators_1.0.12 
-#>  [5] tools_3.6.3       digest_0.6.25     evaluate_0.14     lifecycle_0.2.0  
-#>  [9] gtable_0.3.0      lattice_0.20-41   pkgconfig_2.0.3   rlang_0.4.7      
-#> [13] foreach_1.5.0     yaml_2.2.1        xfun_0.16         withr_2.2.0      
-#> [17] stringr_1.4.0     dplyr_1.0.0       knitr_1.29        hms_0.5.3        
-#> [21] generics_0.0.2    vctrs_0.3.2       grid_3.6.3        tidyselect_1.1.0 
-#> [25] glue_1.4.2        R6_2.4.1          rmarkdown_2.3     farver_2.0.3     
-#> [29] purrr_0.3.4       magrittr_1.5      scales_1.1.1      codetools_0.2-16 
-#> [33] htmltools_0.5.0   ellipsis_0.3.1    splines_3.6.3     shape_1.4.4      
-#> [37] colorspace_1.4-1  labeling_0.3      stringi_1.4.6     munsell_0.5.0    
-#> [41] crayon_1.3.4
+#>  [1] shape_1.4.4       tidyselect_1.1.0  xfun_0.16         remotes_2.2.0    
+#>  [5] purrr_0.3.4       splines_3.6.3     lattice_0.20-41   generics_0.0.2   
+#>  [9] colorspace_1.4-1  vctrs_0.3.2       testthat_2.3.2    usethis_1.6.1    
+#> [13] htmltools_0.5.0   yaml_2.2.1        rlang_0.4.7       pkgbuild_1.1.0   
+#> [17] pillar_1.4.6      glue_1.4.2        withr_2.2.0       sessioninfo_1.1.1
+#> [21] foreach_1.5.0     lifecycle_0.2.0   stringr_1.4.0     munsell_0.5.0    
+#> [25] gtable_0.3.0      devtools_2.3.1    codetools_0.2-16  memoise_1.1.0    
+#> [29] evaluate_0.14     knitr_1.29        callr_3.4.3       ps_1.3.4         
+#> [33] fansi_0.4.1       backports_1.1.8   scales_1.1.1      desc_1.2.0       
+#> [37] pkgload_1.1.0     fs_1.4.2          hms_0.5.3         digest_0.6.25    
+#> [41] stringi_1.4.6     processx_3.4.3    dplyr_1.0.0       grid_3.6.3       
+#> [45] rprojroot_1.3-2   cli_2.0.2         tools_3.6.3       magrittr_1.5     
+#> [49] crayon_1.3.4      pkgconfig_2.0.3   ellipsis_0.3.1    prettyunits_1.1.1
+#> [53] assertthat_0.2.1  rmarkdown_2.3     iterators_1.0.12  R6_2.4.1         
+#> [57] compiler_3.6.3
 ```
 
-References Zeng D, Ye Z, Wu J, Zhou R, Fan X, Wang G, Huang Y, Wu J, Sun
-H, Wang M, Bin J, Liao Y, Li N, Shi M, Liao W. Macrophage correlates
+\#\#References Zeng D, Ye Z, Wu J, Zhou R, Fan X, Wang G, Huang Y, Wu J,
+Sun H, Wang M, Bin J, Liao Y, Li N, Shi M, Liao W. Macrophage correlates
 with immunophenotype and predicts anti-PD-L1 response of urothelial
 cancer. Theranostics 2020; 10(15):7002-7014.
-[doi:10.7150/thno.46176](http://www.thno.org/v10p7002.htm) ——— Contact:
-E-mail any questions to <dongqiangzeng0808@gmail.com>
+[doi:10.7150/thno.46176](http://www.thno.org/v10p7002.html)
+
+-----
+
+Contact: E-mail any questions to <dongqiangzeng0808@gmail.com>
