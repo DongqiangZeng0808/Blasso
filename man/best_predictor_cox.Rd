@@ -2,7 +2,7 @@
 % Please edit documentation in R/best_predictot_cox.R
 \name{best_predictor_cox}
 \alias{best_predictor_cox}
-\title{Using bootstraping and LASSO algorithm to choose best prognostic features}
+\title{Using bootstrapping and LASSO algorithm to choose best prognostic features}
 \usage{
 best_predictor_cox(
   target_data,
@@ -15,13 +15,14 @@ best_predictor_cox(
   propotion = 0.8,
   nfolds = 10,
   plot_vars = 20,
-  palette = "Blues"
+  palette = "Blues",
+  show_progress = TRUE
 )
 }
 \arguments{
-\item{target_data}{Data frame contains patient identifer, survival time and survival event = 0/1}
+\item{target_data}{Data frame contains patient identifier, survival time and survival event = 0/1}
 
-\item{features}{Data frame contains patient identifer and variables after feature engineering}
+\item{features}{Data frame contains patient identifier and variables after feature engineering}
 
 \item{status}{column name of survival event}
 
@@ -33,17 +34,19 @@ best_predictor_cox(
 
 \item{permutation}{times of iteration}
 
-\item{propotion}{propotion of patients in each bootstraping iteration}
+\item{propotion}{proportion of patients in each bootstrapping iteration}
 
-\item{nfolds}{folds to perform cross validataion in LASSO}
+\item{nfolds}{folds to perform cross validation in LASSO}
 
 \item{palette}{plotting palette, using `RColorBrewer::brewer.pal()`}
+
+\item{show_progress}{show progress bar}
 }
 \value{
 variables with frequency
 }
 \description{
-Using bootstraping and LASSO algorithm to choose best prognostic features
+Using bootstrapping and LASSO algorithm to choose best prognostic features
 }
 \examples{
 data("target")

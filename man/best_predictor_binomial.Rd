@@ -2,7 +2,7 @@
 % Please edit documentation in R/best_predictor_binomial.R
 \name{best_predictor_binomial}
 \alias{best_predictor_binomial}
-\title{Using bootstraping and LASSO algorithm to choose best predictive features}
+\title{Using bootstrapping and LASSO algorithm to choose best predictive features}
 \usage{
 best_predictor_binomial(
   target_data,
@@ -10,6 +10,7 @@ best_predictor_binomial(
   features,
   target_data_id = "ID",
   features_id = "ID",
+  show_progress = TRUE,
   permutation = 1000,
   propotion = 0.8,
   nfolds = 10,
@@ -18,19 +19,21 @@ best_predictor_binomial(
 )
 }
 \arguments{
-\item{target_data}{Data frame contains patient identifer, and target_data}
+\item{target_data}{Data frame contains patient identifier, and target_data}
 
 \item{response}{binary variables}
 
-\item{features}{Data frame contains patient identifer and variables after feature engineering}
+\item{features}{Data frame contains patient identifier and variables after feature engineering}
 
 \item{target_data_id}{column name of phenotype data}
 
 \item{features_id}{column name of feature matrix}
 
+\item{show_progress}{show progress bar}
+
 \item{permutation}{times of iteration}
 
-\item{propotion}{propotion of patients in each boostraping iteration}
+\item{propotion}{proportion of patients in each bootstrapping iteration}
 
 \item{nfolds}{folds to perform cross validation in LASSO}
 
@@ -42,7 +45,7 @@ best_predictor_binomial(
 
 }
 \description{
-Using bootstraping and LASSO algorithm to choose best predictive features
+Using bootstrapping and LASSO algorithm to choose best predictive features
 }
 \examples{
 res<-best_predictor_binomial(target_data = target, features = features,response = "status",nfolds = 10,permutation = 100)

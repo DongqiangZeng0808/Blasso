@@ -76,7 +76,7 @@ best_predictor_cox<-function(target_data,features,status,time,target_data_id = "
 
   # ggsave(pp,filename ="Frequency_of_variables_choosen_by_lasso.pdf",
   #        width =5+0.1*length(plot_vars) ,height =6.5 )
-  pp
+  print(pp)
   res<-list("res" = res,"plot" = pp)
   return(res)
 }

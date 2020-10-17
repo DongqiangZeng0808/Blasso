@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 # Blasso： Integrating LASSO cox regression and bootstrapping algorithm to find best prognostic features
 
 
-##The package is not yet on CRAN. You can install from Github:
+The package is not yet on CRAN. You can install from Github:
 
 ```{r,message=FALSE}
 
@@ -25,7 +25,7 @@ if (!requireNamespace("Blasso", quietly = TRUE))  devtools::install_github("Dong
 
 ```
 
-##Loading packages,Main documentation is on the `best_predictor_cox` and `best_predictor_binominal` function in the package:
+Loading packages and main function in the package:
 ```{r, warning=FALSE,message=FALSE}
 
 library(Blasso) 
@@ -34,7 +34,7 @@ help("best_predictor_binomial")
 
 ```
 
-##Supplementary data
+Supplementary data
 
 ```{r}
 data("target")
@@ -45,9 +45,9 @@ features[1:5,1:5]
 
 ```
 
-##Usage-1: Cox-regression model
+## Usage-1: Cox-regression model
 
-```{r,message=FALSE,warning=FALSE}
+```{r,LassoCox,fig.height=8, fig.width= 10,message=FALSE,warning=FALSE}
 
 res<-best_predictor_cox(target_data = target, 
                         features = features, 
@@ -56,14 +56,14 @@ res<-best_predictor_cox(target_data = target,
                         nfolds = 10,
                         permutation = 300,
                         show_progress = FALSE)
-head(res$res)
+head(res$res, n = 10)
 
 ```
 
 
-##Usage-2: Binomial model
+## Usage-2: Binomial model
 
-```{r,message=FALSE,warning=FALSE}
+```{r,LassoBinomial, fig.height=8, fig.width= 10,message=FALSE,warning=FALSE}
 
 res<-best_predictor_binomial(target_data = target, 
                              features = features,
@@ -71,18 +71,19 @@ res<-best_predictor_binomial(target_data = target,
                              nfolds = 10,
                              permutation = 300,
                              show_progress = FALSE)
-head(res$res)
+head(res$res, n = 10)
 
 ```
 
-##Session Info
+## Session Info
 
 ```{r,message=FALSE}
 sessionInfo()
 ```
 
 
-##References
+## References
+
 Zeng D, Ye Z, Wu J, Zhou R, Fan X, Wang G, Huang Y, Wu J, Sun H, Wang M, Bin J, Liao Y, Li N, Shi M, Liao W. Macrophage correlates with immunophenotype and predicts anti-PD-L1 response of urothelial cancer. Theranostics 2020; 10(15):7002-7014. [doi:10.7150/thno.46176](http://www.thno.org/v10p7002.html)
 
 ---------
