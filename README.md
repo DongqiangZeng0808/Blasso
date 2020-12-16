@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# Blasso： Integrating LASSO cox regression and bootstrapping algorithm to find best prognostic features
+# Blasso： Integrating LASSO regression and bootstrapping algorithm to find best prognostic or predictive feature
 
 The package is not yet on CRAN. You can install from Github:
 
@@ -68,15 +68,15 @@ res<-best_predictor_cox(target_data = target,
 head(res$res, n = 10)
 #>                                                             res Freq
 #> 1                                       Macrophage_M1_cibersort  264
-#> 2                                     GO_RESPONSE_TO_COBALT_ION  254
-#> 3                         GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  210
-#> 4            GO_IMIDAZOLE_CONTAINING_COMPOUND_METABOLIC_PROCESS  208
-#> 5                      GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  207
-#> 6  GO_CELL_CELL_ADHESION_VIA_PLASMA_MEMBRANE_ADHESION_MOLECULES  184
-#> 7                            Dendritic_cell_activated_cibersort  178
-#> 8                                Glycosphosphatidylinositol_PCA  174
-#> 9                GO_REGULATION_OF_DEFENSE_RESPONSE_TO_BACTERIUM  165
-#> 10                   T_cell_CD4_posi_memory_activated_cibersort  143
+#> 2                                     GO_RESPONSE_TO_COBALT_ION  242
+#> 3                         GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  212
+#> 4                      GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  208
+#> 5            GO_IMIDAZOLE_CONTAINING_COMPOUND_METABOLIC_PROCESS  200
+#> 6                            Dendritic_cell_activated_cibersort  183
+#> 7                                Glycosphosphatidylinositol_PCA  179
+#> 8  GO_CELL_CELL_ADHESION_VIA_PLASMA_MEMBRANE_ADHESION_MOLECULES  167
+#> 9                GO_REGULATION_OF_DEFENSE_RESPONSE_TO_BACTERIUM  153
+#> 10                   T_cell_CD4_posi_memory_activated_cibersort  148
 ```
 
 ## Usage-2: Binomial model
@@ -96,16 +96,16 @@ res<-best_predictor_binomial(target_data = target,
 ``` r
 head(res$res, n = 10)
 #>                                                               res Freq
-#> 2                                         Macrophage_M1_cibersort  287
-#> 3                                       GO_RESPONSE_TO_COBALT_ION  272
-#> 4                        GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  249
-#> 5                     GO_SOMATIC_STEM_CELL_POPULATION_MAINTENANCE  247
-#> 6                           GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  246
-#> 7                                                       GO_M_BAND  232
-#> 8                              Dendritic_cell_activated_cibersort  227
-#> 9  GO_RECEPTOR_SIGNALING_PROTEIN_SERINE_THREONINE_KINASE_ACTIVITY  207
-#> 10                                     GO_CENTROSOME_LOCALIZATION  203
-#> 11                GO_VERY_LONG_CHAIN_FATTY_ACID_METABOLIC_PROCESS  197
+#> 2                                       GO_RESPONSE_TO_COBALT_ION  276
+#> 3                                         Macrophage_M1_cibersort  274
+#> 4                           GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  247
+#> 5                     GO_SOMATIC_STEM_CELL_POPULATION_MAINTENANCE  245
+#> 6                              Dendritic_cell_activated_cibersort  242
+#> 7                        GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  240
+#> 8                                                       GO_M_BAND  225
+#> 9  GO_RECEPTOR_SIGNALING_PROTEIN_SERINE_THREONINE_KINASE_ACTIVITY  206
+#> 10                                     GO_CENTROSOME_LOCALIZATION  199
+#> 11                                     GO_CATECHOLAMINE_TRANSPORT  190
 ```
 
 ## Session Info
@@ -114,7 +114,7 @@ head(res$res, n = 10)
 sessionInfo()
 #> R version 3.6.3 (2020-02-29)
 #> Platform: x86_64-w64-mingw32/x64 (64-bit)
-#> Running under: Windows 10 x64 (build 18362)
+#> Running under: Windows 10 x64 (build 18363)
 #> 
 #> Matrix products: default
 #> 
@@ -136,14 +136,14 @@ sessionInfo()
 #>  [1] shape_1.4.4       tidyselect_1.1.0  xfun_0.16         remotes_2.2.0    
 #>  [5] purrr_0.3.4       splines_3.6.3     lattice_0.20-41   generics_0.0.2   
 #>  [9] colorspace_1.4-1  vctrs_0.3.2       testthat_2.3.2    usethis_1.6.1    
-#> [13] htmltools_0.5.0   yaml_2.2.1        rlang_0.4.7       pkgbuild_1.1.0   
-#> [17] pillar_1.4.6      glue_1.4.2        withr_2.2.0       sessioninfo_1.1.1
+#> [13] htmltools_0.5.0   yaml_2.2.1        rlang_0.4.8       pkgbuild_1.1.0   
+#> [17] pillar_1.4.6      glue_1.4.2        withr_2.3.0       sessioninfo_1.1.1
 #> [21] foreach_1.5.0     lifecycle_0.2.0   stringr_1.4.0     munsell_0.5.0    
 #> [25] gtable_0.3.0      devtools_2.3.1    codetools_0.2-16  memoise_1.1.0    
 #> [29] evaluate_0.14     labeling_0.3      knitr_1.29        callr_3.4.3      
 #> [33] ps_1.3.4          fansi_0.4.1       backports_1.1.8   scales_1.1.1     
 #> [37] desc_1.2.0        pkgload_1.1.0     farver_2.0.3      fs_1.4.2         
-#> [41] hms_0.5.3         digest_0.6.25     stringi_1.4.6     processx_3.4.3   
+#> [41] hms_0.5.3         digest_0.6.25     stringi_1.5.3     processx_3.4.3   
 #> [45] dplyr_1.0.0       grid_3.6.3        rprojroot_1.3-2   cli_2.0.2        
 #> [49] tools_3.6.3       magrittr_1.5      crayon_1.3.4      pkgconfig_2.0.3  
 #> [53] ellipsis_0.3.1    prettyunits_1.1.1 assertthat_0.2.1  rmarkdown_2.3    

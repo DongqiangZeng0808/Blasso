@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Blasso： Integrating LASSO cox regression and bootstrapping algorithm to find best prognostic features
+# Blasso： Integrating LASSO regression and bootstrapping algorithm to find best prognostic or predictive feature
 
 
 The package is not yet on CRAN. You can install from Github:
