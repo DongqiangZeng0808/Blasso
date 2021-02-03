@@ -84,7 +84,7 @@ best_predictor_binomial<-function(target_data,response = "response",
     theme_light()+
     xlab("")+
     theme(axis.text.y=element_text(size=rel(1.5)),
-          axis.text.x= element_text(face="plain",size=8,angle=60,hjust = 1,color="black"))+
+          axis.text.x= element_text(face="plain",size=10,angle=60,hjust = 1,color="black"))+
     scale_fill_manual(values = colors)+theme(legend.position = "none")+
     scale_x_discrete(labels=function(x) str_wrap(x, width=35))
 

@@ -67,16 +67,16 @@ res<-best_predictor_cox(target_data = target,
 ``` r
 head(res$res, n = 10)
 #>                                                             res Freq
-#> 1                                       Macrophage_M1_cibersort  264
-#> 2                                     GO_RESPONSE_TO_COBALT_ION  242
-#> 3                         GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  212
-#> 4                      GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  208
-#> 5            GO_IMIDAZOLE_CONTAINING_COMPOUND_METABOLIC_PROCESS  200
-#> 6                            Dendritic_cell_activated_cibersort  183
-#> 7                                Glycosphosphatidylinositol_PCA  179
-#> 8  GO_CELL_CELL_ADHESION_VIA_PLASMA_MEMBRANE_ADHESION_MOLECULES  167
-#> 9                GO_REGULATION_OF_DEFENSE_RESPONSE_TO_BACTERIUM  153
-#> 10                   T_cell_CD4_posi_memory_activated_cibersort  148
+#> 1                                       Macrophage M1 cibersort  275
+#> 2                                     GO RESPONSE TO COBALT ION  246
+#> 3                      GO REGULATION OF CHOLESTEROL HOMEOSTASIS  207
+#> 4                            Dendritic cell activated cibersort  203
+#> 5                         GO NEUROTRANSMITTER RECEPTOR ACTIVITY  201
+#> 6                                Glycosphosphatidylinositol PCA  198
+#> 7            GO IMIDAZOLE CONTAINING COMPOUND METABOLIC PROCESS  183
+#> 8  GO CELL CELL ADHESION VIA PLASMA MEMBRANE ADHESION MOLECULES  170
+#> 9                    GO NEGATIVE REGULATION OF RESPONSE TO FOOD  164
+#> 10               GO REGULATION OF DEFENSE RESPONSE TO BACTERIUM  160
 ```
 
 ## Usage-2: Binomial model
@@ -96,16 +96,16 @@ res<-best_predictor_binomial(target_data = target,
 ``` r
 head(res$res, n = 10)
 #>                                                               res Freq
-#> 2                                       GO_RESPONSE_TO_COBALT_ION  276
-#> 3                                         Macrophage_M1_cibersort  274
-#> 4                           GO_NEUROTRANSMITTER_RECEPTOR_ACTIVITY  247
-#> 5                     GO_SOMATIC_STEM_CELL_POPULATION_MAINTENANCE  245
-#> 6                              Dendritic_cell_activated_cibersort  242
-#> 7                        GO_REGULATION_OF_CHOLESTEROL_HOMEOSTASIS  240
-#> 8                                                       GO_M_BAND  225
-#> 9  GO_RECEPTOR_SIGNALING_PROTEIN_SERINE_THREONINE_KINASE_ACTIVITY  206
-#> 10                                     GO_CENTROSOME_LOCALIZATION  199
-#> 11                                     GO_CATECHOLAMINE_TRANSPORT  190
+#> 2                                         Macrophage M1 cibersort  286
+#> 3                                       GO RESPONSE TO COBALT ION  273
+#> 4                     GO SOMATIC STEM CELL POPULATION MAINTENANCE  248
+#> 5                        GO REGULATION OF CHOLESTEROL HOMEOSTASIS  245
+#> 6                           GO NEUROTRANSMITTER RECEPTOR ACTIVITY  242
+#> 7                              Dendritic cell activated cibersort  224
+#> 8                                      GO CENTROSOME LOCALIZATION  217
+#> 9                                                       GO M BAND  217
+#> 10 GO RECEPTOR SIGNALING PROTEIN SERINE THREONINE KINASE ACTIVITY  210
+#> 11                GO VERY LONG CHAIN FATTY ACID METABOLIC PROCESS  210
 ```
 
 ## Session Info
@@ -114,7 +114,7 @@ head(res$res, n = 10)
 sessionInfo()
 #> R version 3.6.3 (2020-02-29)
 #> Platform: x86_64-w64-mingw32/x64 (64-bit)
-#> Running under: Windows 10 x64 (build 18363)
+#> Running under: Windows 10 x64 (build 19041)
 #> 
 #> Matrix products: default
 #> 
@@ -129,25 +129,26 @@ sessionInfo()
 #> [1] stats     graphics  grDevices utils     datasets  methods   base     
 #> 
 #> other attached packages:
-#> [1] Blasso_0.1.0       progress_1.2.2     RColorBrewer_1.1-2 survival_3.2-3    
-#> [5] tibble_3.0.3       ggplot2_3.3.2      glmnet_4.0-2       Matrix_1.2-18     
+#> [1] Blasso_0.1.0       stringr_1.4.0      progress_1.2.2     RColorBrewer_1.1-2
+#> [5] survival_3.2-3     tibble_3.0.3       ggplot2_3.3.3      glmnet_4.0-2      
+#> [9] Matrix_1.2-18     
 #> 
 #> loaded via a namespace (and not attached):
-#>  [1] shape_1.4.4       tidyselect_1.1.0  xfun_0.16         remotes_2.2.0    
-#>  [5] purrr_0.3.4       splines_3.6.3     lattice_0.20-41   generics_0.0.2   
-#>  [9] colorspace_1.4-1  vctrs_0.3.2       testthat_2.3.2    usethis_1.6.1    
-#> [13] htmltools_0.5.0   yaml_2.2.1        rlang_0.4.8       pkgbuild_1.1.0   
-#> [17] pillar_1.4.6      glue_1.4.2        withr_2.3.0       sessioninfo_1.1.1
-#> [21] foreach_1.5.0     lifecycle_0.2.0   stringr_1.4.0     munsell_0.5.0    
-#> [25] gtable_0.3.0      devtools_2.3.1    codetools_0.2-16  memoise_1.1.0    
-#> [29] evaluate_0.14     labeling_0.3      knitr_1.29        callr_3.4.3      
-#> [33] ps_1.3.4          fansi_0.4.1       backports_1.1.8   scales_1.1.1     
-#> [37] desc_1.2.0        pkgload_1.1.0     farver_2.0.3      fs_1.4.2         
-#> [41] hms_0.5.3         digest_0.6.25     stringi_1.5.3     processx_3.4.3   
-#> [45] dplyr_1.0.0       grid_3.6.3        rprojroot_1.3-2   cli_2.0.2        
-#> [49] tools_3.6.3       magrittr_1.5      crayon_1.3.4      pkgconfig_2.0.3  
-#> [53] ellipsis_0.3.1    prettyunits_1.1.1 assertthat_0.2.1  rmarkdown_2.3    
-#> [57] iterators_1.0.12  R6_2.4.1          compiler_3.6.3
+#>  [1] shape_1.4.5       tidyselect_1.1.0  xfun_0.16         remotes_2.2.0    
+#>  [5] purrr_0.3.4       splines_3.6.3     lattice_0.20-41   generics_0.1.0   
+#>  [9] colorspace_1.4-1  vctrs_0.3.2       testthat_2.3.2    usethis_2.0.0    
+#> [13] htmltools_0.5.0   yaml_2.2.1        rlang_0.4.8       pkgbuild_1.2.0   
+#> [17] pillar_1.4.7      glue_1.4.2        withr_2.3.0       sessioninfo_1.1.1
+#> [21] foreach_1.5.1     lifecycle_0.2.0   munsell_0.5.0     gtable_0.3.0     
+#> [25] devtools_2.3.2    codetools_0.2-18  memoise_1.1.0     evaluate_0.14    
+#> [29] labeling_0.4.2    knitr_1.30        callr_3.5.1       ps_1.5.0         
+#> [33] fansi_0.4.1       scales_1.1.1      desc_1.2.0        pkgload_1.1.0    
+#> [37] farver_2.0.3      fs_1.4.2          hms_0.5.3         digest_0.6.25    
+#> [41] stringi_1.5.3     processx_3.4.5    dplyr_1.0.2       grid_3.6.3       
+#> [45] rprojroot_2.0.2   cli_2.2.0         tools_3.6.3       magrittr_2.0.1   
+#> [49] crayon_1.3.4      pkgconfig_2.0.3   ellipsis_0.3.1    prettyunits_1.1.1
+#> [53] assertthat_0.2.1  rmarkdown_2.6     iterators_1.0.13  R6_2.5.0         
+#> [57] compiler_3.6.3
 ```
 
 ## References
