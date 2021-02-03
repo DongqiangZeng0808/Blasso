@@ -77,8 +77,8 @@ best_predictor_binomial<-function(target_data,response = "response",
     res$res<-gsub(res$res,pattern = "\\_",replacement = " ")
   }
 
-  pp<-ggplot(res[1:plot_vars,], aes(fill=res, y=Freq, x=res)) +
-    geom_histogram( stat="identity") +
+  pp<-ggplot(res[1:plot_vars,], aes(x= reorder(res, -Freq), y=Freq,fill=res)) +
+    geom_histogram(stat="identity") +
     geom_hline(aes(yintercept = permutation*0.5), lty= 1,colour="grey",size=0.6)+
     ylim(0,permutation)+
     theme_light()+

@@ -59,7 +59,8 @@ res<-best_predictor_cox(target_data = target,
                         time = "time",
                         nfolds = 10,
                         permutation = 300,
-                        show_progress = FALSE)
+                        show_progress = FALSE,
+                        palette = "Greys")
 ```
 
 <img src="man/figuresLassoCox-1.png" width="100%" />
@@ -67,16 +68,16 @@ res<-best_predictor_cox(target_data = target,
 ``` r
 head(res$res, n = 10)
 #>                                                             res Freq
-#> 1                                       Macrophage M1 cibersort  275
-#> 2                                     GO RESPONSE TO COBALT ION  246
-#> 3                      GO REGULATION OF CHOLESTEROL HOMEOSTASIS  207
-#> 4                            Dendritic cell activated cibersort  203
-#> 5                         GO NEUROTRANSMITTER RECEPTOR ACTIVITY  201
-#> 6                                Glycosphosphatidylinositol PCA  198
-#> 7            GO IMIDAZOLE CONTAINING COMPOUND METABOLIC PROCESS  183
-#> 8  GO CELL CELL ADHESION VIA PLASMA MEMBRANE ADHESION MOLECULES  170
-#> 9                    GO NEGATIVE REGULATION OF RESPONSE TO FOOD  164
-#> 10               GO REGULATION OF DEFENSE RESPONSE TO BACTERIUM  160
+#> 1                                       Macrophage M1 cibersort  273
+#> 2                                     GO RESPONSE TO COBALT ION  238
+#> 3                         GO NEUROTRANSMITTER RECEPTOR ACTIVITY  207
+#> 4                      GO REGULATION OF CHOLESTEROL HOMEOSTASIS  200
+#> 5                                Glycosphosphatidylinositol PCA  192
+#> 6                            Dendritic cell activated cibersort  191
+#> 7            GO IMIDAZOLE CONTAINING COMPOUND METABOLIC PROCESS  180
+#> 8  GO CELL CELL ADHESION VIA PLASMA MEMBRANE ADHESION MOLECULES  167
+#> 9                GO REGULATION OF DEFENSE RESPONSE TO BACTERIUM  162
+#> 10                   T cell CD4 posi memory activated cibersort  146
 ```
 
 ## Usage-2: Binomial model
@@ -88,7 +89,8 @@ res<-best_predictor_binomial(target_data = target,
                              response = "status",
                              nfolds = 10,
                              permutation = 300,
-                             show_progress = FALSE)
+                             show_progress = FALSE,
+                             palette = "Blues")
 ```
 
 <img src="man/figuresLassoBinomial-1.png" width="100%" />
@@ -96,16 +98,16 @@ res<-best_predictor_binomial(target_data = target,
 ``` r
 head(res$res, n = 10)
 #>                                                               res Freq
-#> 2                                         Macrophage M1 cibersort  286
-#> 3                                       GO RESPONSE TO COBALT ION  273
-#> 4                     GO SOMATIC STEM CELL POPULATION MAINTENANCE  248
-#> 5                        GO REGULATION OF CHOLESTEROL HOMEOSTASIS  245
-#> 6                           GO NEUROTRANSMITTER RECEPTOR ACTIVITY  242
-#> 7                              Dendritic cell activated cibersort  224
-#> 8                                      GO CENTROSOME LOCALIZATION  217
-#> 9                                                       GO M BAND  217
-#> 10 GO RECEPTOR SIGNALING PROTEIN SERINE THREONINE KINASE ACTIVITY  210
-#> 11                GO VERY LONG CHAIN FATTY ACID METABOLIC PROCESS  210
+#> 2                                         Macrophage M1 cibersort  279
+#> 3                                       GO RESPONSE TO COBALT ION  275
+#> 4                        GO REGULATION OF CHOLESTEROL HOMEOSTASIS  252
+#> 5                     GO SOMATIC STEM CELL POPULATION MAINTENANCE  246
+#> 6  GO RECEPTOR SIGNALING PROTEIN SERINE THREONINE KINASE ACTIVITY  238
+#> 7                           GO NEUROTRANSMITTER RECEPTOR ACTIVITY  235
+#> 8                              Dendritic cell activated cibersort  226
+#> 9                                      GO CENTROSOME LOCALIZATION  219
+#> 10                                                      GO M BAND  215
+#> 11                GO VERY LONG CHAIN FATTY ACID METABOLIC PROCESS  206
 ```
 
 ## Session Info
