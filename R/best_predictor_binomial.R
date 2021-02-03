@@ -73,7 +73,7 @@ best_predictor_binomial<-function(target_data,response = "response",
   colors <-grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, palette))(plot_vars)
   colors<-rev(colors)
 
-  if(max(nchar(res[1:plot_vars,"res"]))> discrete_x){
+  if(max(nchar(as.character(res[1:plot_vars,]$res)))> discrete_x){
     res$res<-gsub(res$res,pattern = "\\_",replacement = " ")
   }
 

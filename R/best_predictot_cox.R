@@ -66,7 +66,7 @@ best_predictor_cox<-function(target_data,features,status,time,target_data_id = "
   colors<-rev(colors)
 
 
-  if(max(nchar(res[1:plot_vars,"res"]))> discrete_x){
+  if(max(nchar(as.character(res[1:plot_vars,]$res)))> discrete_x){
     res$res<-gsub(res$res,pattern = "\\_",replacement = " ")
   }
 
