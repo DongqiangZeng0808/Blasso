@@ -16,7 +16,8 @@ best_predictor_cox(
   nfolds = 10,
   plot_vars = 20,
   palette = "Blues",
-  show_progress = TRUE
+  show_progress = TRUE,
+  discrete_x = 20
 )
 }
 \arguments{
@@ -41,6 +42,8 @@ best_predictor_cox(
 \item{palette}{plotting palette, using `RColorBrewer::brewer.pal()`}
 
 \item{show_progress}{show progress bar}
+
+\item{discrete_x}{if maximal character length of variables is larger than discrete_x, label will be discrete}
 }
 \value{
 variables with frequency

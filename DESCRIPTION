@@ -15,5 +15,6 @@ Depends:
     tibble,
     survival,
     RColorBrewer,
-    progress
+    progress,
+    stringr
 RoxygenNote: 7.1.1

@@ -14,7 +14,7 @@
 #' @param nfolds folds to perform cross validation in LASSO
 #' @param palette plotting palette, using `RColorBrewer::brewer.pal()`
 #' @param show_progress show progress bar
-#'
+#' @param discrete_x if maximal character length of variables is larger than discrete_x, label will be discrete
 #' @author Dongqiang Zeng
 #' @return variables with frequency
 #' @export
@@ -25,7 +25,7 @@
 # res<-best_predictor_cox(target_data = target, features = features,status = "status",time = "time",permutation =100)
 
 best_predictor_cox<-function(target_data,features,status,time,target_data_id = "ID",features_id ="ID",
-                       permutation = 1000,propotion = 0.8,nfolds = 10,plot_vars = 20,palette = "Blues",show_progress = TRUE){
+                       permutation = 1000,propotion = 0.8,nfolds = 10,plot_vars = 20,palette = "Blues",show_progress = TRUE,discrete_x = 20){
 
   tar_fea<-merge(target_data[,c(target_data_id,status,time)],features,by.x = target_data_id,by.y = features_id,all = F)
   tar_fea<-tibble:: column_to_rownames(tar_fea,var = target_data_id )
@@ -64,6 +64,12 @@ best_predictor_cox<-function(target_data,features,status,time,target_data_id = "
   # Define the number of colors you want
   colors <-grDevices::colorRampPalette(RColorBrewer:: brewer.pal(8,palette))(plot_vars)
   colors<-rev(colors)
+
+
+  if(max(nchar(res[1:plot_vars,"res"]))> discrete_x){
+    res$res<-gsub(res$res,pattern = "\\_",replacement = " ")
+  }
+
   pp<-ggplot(res[1:plot_vars,], aes(fill=res, y=Freq, x=res)) +
     geom_histogram( stat="identity") +
     geom_hline(aes(yintercept = permutation*0.5), lty= 1,colour="grey",size=0.6)+
@@ -71,8 +77,9 @@ best_predictor_cox<-function(target_data,features,status,time,target_data_id = "
     theme_light()+
     xlab("")+
     theme(axis.text.y=element_text(size=rel(1.5)),
-          axis.text.x= element_text(face="plain",size=7,angle=60,hjust = 1,color="black"))+
-    scale_fill_manual(values = colors)+theme(legend.position = "none")
+          axis.text.x= element_text(face="plain",size=8,angle=60,hjust = 1,color="black"))+
+    scale_fill_manual(values = colors)+theme(legend.position = "none")+
+    scale_x_discrete(labels=function(x) str_wrap(x, width=35))
 
   # ggsave(pp,filename ="Frequency_of_variables_choosen_by_lasso.pdf",
   #        width =5+0.1*length(plot_vars) ,height =6.5 )

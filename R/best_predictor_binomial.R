@@ -18,6 +18,7 @@
 #' @param response binary variables
 #' @param palette plotting palette, using `RColorBrewer::brewer.pal()`
 #' @param show_progress show progress bar
+#' @param discrete_x if maximal character length of variables is larger than discrete_x, label will be discrete
 #'
 #' @author Dongqiang Zeng
 #'
@@ -30,7 +31,7 @@ best_predictor_binomial<-function(target_data,response = "response",
                                   features,target_data_id = "ID",features_id ="ID",
                                   show_progress = TRUE,
                                   permutation = 1000,propotion = 0.8,
-                                  nfolds = 10,plot_vars = 20,palette = "Blues"){
+                                  nfolds = 10,plot_vars = 20,palette = "Blues",discrete_x = 20){
 
   tar_fea<-merge(target_data[,c(target_data_id,response)],features,by.x = target_data_id,by.y = features_id,all = F)
   tar_fea<-tibble:: column_to_rownames(tar_fea,var = target_data_id )
@@ -71,6 +72,11 @@ best_predictor_binomial<-function(target_data,response = "response",
   # RColorBrewer::display.brewer.all()
   colors <-grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, palette))(plot_vars)
   colors<-rev(colors)
+
+  if(max(nchar(res[1:plot_vars,"res"]))> discrete_x){
+    res$res<-gsub(res$res,pattern = "\\_",replacement = " ")
+  }
+
   pp<-ggplot(res[1:plot_vars,], aes(fill=res, y=Freq, x=res)) +
     geom_histogram( stat="identity") +
     geom_hline(aes(yintercept = permutation*0.5), lty= 1,colour="grey",size=0.6)+
@@ -78,8 +84,9 @@ best_predictor_binomial<-function(target_data,response = "response",
     theme_light()+
     xlab("")+
     theme(axis.text.y=element_text(size=rel(1.5)),
-          axis.text.x= element_text(face="plain",size=7,angle=60,hjust = 1,color="black"))+
-    scale_fill_manual(values = colors)+theme(legend.position = "none")
+          axis.text.x= element_text(face="plain",size=8,angle=60,hjust = 1,color="black"))+
+    scale_fill_manual(values = colors)+theme(legend.position = "none")+
+    scale_x_discrete(labels=function(x) str_wrap(x, width=35))
 
   # ggsave(pp,filename ="Frequency_of_variables_choosen_by_lasso.pdf",
   #        width =5+0.1*length(plot_vars) ,height =6.5 )

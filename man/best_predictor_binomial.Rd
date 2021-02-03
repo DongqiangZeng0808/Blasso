@@ -15,7 +15,8 @@ best_predictor_binomial(
   propotion = 0.8,
   nfolds = 10,
   plot_vars = 20,
-  palette = "Blues"
+  palette = "Blues",
+  discrete_x = 20
 )
 }
 \arguments{
@@ -40,6 +41,8 @@ best_predictor_binomial(
 \item{plot_vars}{plotting important variables}
 
 \item{palette}{plotting palette, using `RColorBrewer::brewer.pal()`}
+
+\item{discrete_x}{if maximal character length of variables is larger than discrete_x, label will be discrete}
 }
 \value{
 
