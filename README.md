@@ -68,16 +68,16 @@ res<-best_predictor_cox(target_data = target,
 ``` r
 head(res$res, n = 10)
 #>                                                             res Freq
-#> 1                                       Macrophage M1 cibersort  273
-#> 2                                     GO RESPONSE TO COBALT ION  238
-#> 3                         GO NEUROTRANSMITTER RECEPTOR ACTIVITY  207
-#> 4                      GO REGULATION OF CHOLESTEROL HOMEOSTASIS  200
-#> 5                                Glycosphosphatidylinositol PCA  192
+#> 1                                       Macrophage M1 cibersort  272
+#> 2                                     GO RESPONSE TO COBALT ION  235
+#> 3                      GO REGULATION OF CHOLESTEROL HOMEOSTASIS  218
+#> 4                         GO NEUROTRANSMITTER RECEPTOR ACTIVITY  213
+#> 5            GO IMIDAZOLE CONTAINING COMPOUND METABOLIC PROCESS  198
 #> 6                            Dendritic cell activated cibersort  191
-#> 7            GO IMIDAZOLE CONTAINING COMPOUND METABOLIC PROCESS  180
-#> 8  GO CELL CELL ADHESION VIA PLASMA MEMBRANE ADHESION MOLECULES  167
-#> 9                GO REGULATION OF DEFENSE RESPONSE TO BACTERIUM  162
-#> 10                   T cell CD4 posi memory activated cibersort  146
+#> 7                                Glycosphosphatidylinositol PCA  182
+#> 8  GO CELL CELL ADHESION VIA PLASMA MEMBRANE ADHESION MOLECULES  182
+#> 9                GO REGULATION OF DEFENSE RESPONSE TO BACTERIUM  164
+#> 10                   T cell CD4 posi memory activated cibersort  162
 ```
 
 ## Usage-2: Binomial model
@@ -98,16 +98,16 @@ res<-best_predictor_binomial(target_data = target,
 ``` r
 head(res$res, n = 10)
 #>                                                               res Freq
-#> 2                                         Macrophage M1 cibersort  279
-#> 3                                       GO RESPONSE TO COBALT ION  275
-#> 4                        GO REGULATION OF CHOLESTEROL HOMEOSTASIS  252
-#> 5                     GO SOMATIC STEM CELL POPULATION MAINTENANCE  246
-#> 6  GO RECEPTOR SIGNALING PROTEIN SERINE THREONINE KINASE ACTIVITY  238
-#> 7                           GO NEUROTRANSMITTER RECEPTOR ACTIVITY  235
-#> 8                              Dendritic cell activated cibersort  226
-#> 9                                      GO CENTROSOME LOCALIZATION  219
-#> 10                                                      GO M BAND  215
-#> 11                GO VERY LONG CHAIN FATTY ACID METABOLIC PROCESS  206
+#> 2                                         Macrophage M1 cibersort  280
+#> 3                                       GO RESPONSE TO COBALT ION  274
+#> 4                     GO SOMATIC STEM CELL POPULATION MAINTENANCE  252
+#> 5                                                       GO M BAND  241
+#> 6                           GO NEUROTRANSMITTER RECEPTOR ACTIVITY  236
+#> 7                        GO REGULATION OF CHOLESTEROL HOMEOSTASIS  236
+#> 8                              Dendritic cell activated cibersort  233
+#> 9  GO RECEPTOR SIGNALING PROTEIN SERINE THREONINE KINASE ACTIVITY  224
+#> 10                                     GO CENTROSOME LOCALIZATION  215
+#> 11                                 Glycosphosphatidylinositol PCA  207
 ```
 
 ## Session Info
