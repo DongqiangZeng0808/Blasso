@@ -55,8 +55,7 @@ res<-best_predictor_cox(target_data = target,
                         time = "time",
                         nfolds = 10,
                         permutation = 300,
-                        show_progress = FALSE,
-                        palette = "Greys")
+                        show_progress = FALSE)
 head(res$res, n = 10)
 
 ```
@@ -71,8 +70,7 @@ res<-best_predictor_binomial(target_data = target,
                              response = "status",
                              nfolds = 10,
                              permutation = 300,
-                             show_progress = FALSE,
-                             palette = "Blues")
+                             show_progress = FALSE)
 head(res$res, n = 10)
 
 ```

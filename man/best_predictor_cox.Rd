@@ -15,6 +15,7 @@ best_predictor_cox(
   propotion = 0.8,
   nfolds = 10,
   plot_vars = 20,
+  color = "steelblue",
   palette = "Blues",
   show_progress = TRUE,
   discrete_x = 20
@@ -39,7 +40,9 @@ best_predictor_cox(
 
 \item{nfolds}{folds to perform cross validation in LASSO}
 
-\item{palette}{plotting palette, using `RColorBrewer::brewer.pal()`}
+\item{color}{default is steelblue}
+
+\item{palette}{plotting palette, using `RColorBrewer::display.brewer.all()`}
 
 \item{show_progress}{show progress bar}
 
