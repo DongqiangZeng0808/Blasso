@@ -49,7 +49,7 @@ best_predictor_cox(
 \item{discrete_x}{if maximal character length of variables is larger than discrete_x, label will be discrete}
 }
 \value{
-variables with frequency
+variables with frequency, plot and list
 }
 \description{
 Using bootstrapping and LASSO algorithm to choose best prognostic features
