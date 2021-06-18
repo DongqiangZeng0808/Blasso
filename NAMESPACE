@@ -2,4 +2,5 @@
 
 export(best_predictor_binomial)
 export(best_predictor_cox)
+export(find_interaction)
 importFrom(utils,packageDescription)
