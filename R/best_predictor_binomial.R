@@ -16,9 +16,10 @@
 #' @param nfolds folds to perform cross validation in LASSO
 #' @param plot_vars plotting important variables
 #' @param response binary variables
-#' @param palette plotting palette, using `RColorBrewer::brewer.pal()`
+#' @param palette plotting palette, default is `#999999`, using `RColorBrewer::display.brewer.all()` to see more options
 #' @param show_progress show progress bar
 #' @param discrete_x if maximal character length of variables is larger than discrete_x, label will be discrete
+#' @param color default is steelblue
 #'
 #' @author Dongqiang Zeng
 #'
@@ -31,7 +32,7 @@ best_predictor_binomial<-function(target_data,response = "response",
                                   features,target_data_id = "ID",features_id ="ID",
                                   show_progress = TRUE,
                                   permutation = 1000,propotion = 0.8,
-                                  nfolds = 10,plot_vars = 20,palette = "Blues",discrete_x = 20){
+                                  nfolds = 10,plot_vars = 20, color = "#999999", palette = "Blues",discrete_x = 20){
 
   tar_fea<-merge(target_data[,c(target_data_id,response)],features,by.x = target_data_id,by.y = features_id,all = F)
   tar_fea<-tibble:: column_to_rownames(tar_fea,var = target_data_id )
@@ -68,10 +69,15 @@ best_predictor_binomial<-function(target_data,response = "response",
   if("(Intercept)"%in%res$res){
     res<-res[-which(res$res=="(Intercept)"),]
   }
-  # Define the number of colors you want
-  # RColorBrewer::display.brewer.all()
-  colors <-grDevices::colorRampPalette(RColorBrewer::brewer.pal(8, palette))(plot_vars)
-  colors<-rev(colors)
+
+  if(is.null(color)){
+    # RColorBrewer::display.brewer.all()
+    # Define the number of colors you want
+    colors <-grDevices::colorRampPalette(RColorBrewer:: brewer.pal(8,palette))(plot_vars)
+    colors<-rev(colors)
+  }else{
+    colors<-rep(color, plot_vars)
+  }
 
   if(max(nchar(as.character(res[1:plot_vars,]$res)))> discrete_x){
     res$res<-gsub(res$res,pattern = "\\_",replacement = " ")
@@ -84,8 +90,10 @@ best_predictor_binomial<-function(target_data,response = "response",
     theme_light()+
     xlab("")+
     theme(axis.text.y=element_text(size=rel(1.5)),
+          axis.title = element_text(size=rel(2.5)),
           axis.text.x= element_text(face="plain",size=10,angle=60,hjust = 1,color="black"))+
-    scale_fill_manual(values = colors)+theme(legend.position = "none")+
+    scale_fill_manual(values = colors)+
+    theme(legend.position = "none")+
     scale_x_discrete(labels=function(x) str_wrap(x, width=35))
 
   # ggsave(pp,filename ="Frequency_of_variables_choosen_by_lasso.pdf",
