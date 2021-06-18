@@ -1,6 +1,12 @@
 
 
 
+
+
+
+
+
+
 #' Using bootstrapping and LASSO algorithm to choose best prognostic features
 #'
 #' @param target_data Data frame contains patient identifier, survival time and survival event = 0/1
@@ -17,7 +23,7 @@
 #' @param show_progress show progress bar
 #' @param discrete_x if maximal character length of variables is larger than discrete_x, label will be discrete
 #' @author Dongqiang Zeng
-#' @return variables with frequency
+#' @return variables with frequency, plot and list
 #' @export
 #'
 #' @examples
@@ -26,8 +32,9 @@
 # res<-best_predictor_cox(target_data = target, features = features,status = "status",time = "time",permutation =100)
 
 best_predictor_cox<-function(target_data, features, status, time,target_data_id = "ID", features_id ="ID",
-                             permutation = 1000, propotion = 0.8, nfolds = 10, plot_vars = 20, color = "steelblue", palette = "Blues",
-                             show_progress = TRUE,discrete_x = 20){
+                             permutation = 1000, propotion = 0.8, nfolds = 10,
+                             plot_vars = 20, color = "steelblue", palette = "Blues",
+                             show_progress = TRUE, discrete_x = 20){
 
   tar_fea<-merge(target_data[,c(target_data_id,status,time)],features,by.x = target_data_id,by.y = features_id,all = F)
   tar_fea<-tibble:: column_to_rownames(tar_fea,var = target_data_id )
@@ -37,7 +44,8 @@ best_predictor_cox<-function(target_data, features, status, time,target_data_id 
     format = "  Progressing [:bar] :percent in :elapsed",
     total = permutation, clear = FALSE, width= 100)
 
-  res<-as.character(NULL)
+  res<-as.list(NULL)
+
   for(i in 1:permutation){
 
     if(show_progress){
@@ -56,11 +64,18 @@ best_predictor_cox<-function(target_data, features, status, time,target_data_id 
     coefs <- coef(fit$glmnet.fit, s=fit$lambda.min)
     # active.coef <- coefs[which(coefs[,1]!=0)]
     feas <- row.names(coefs)[which(coefs[,1]!=0)]
+
+    feas <- list( names = feas)
+    names(feas)<- paste0("res","_",i)
+
     # myCoefs <-stats::coef(fit, s="lambda.min")
     # feas<-myCoefs@Dimnames[[1]][which(myCoefs!=0 )]
     res<-append(res,feas)
   }
-  res<-as.data.frame(sort(table(res),decreasing = T))
+
+
+  res1<-unlist(res)
+  res1<-as.data.frame(sort(table(res1),decreasing = T))
 
 
   if(is.null(color)){
@@ -72,12 +87,12 @@ best_predictor_cox<-function(target_data, features, status, time,target_data_id 
     colors<-rep(color, plot_vars)
   }
 
-  if(max(nchar(as.character(res[1:plot_vars,]$res)))> discrete_x){
-    res$res<-gsub(res$res,pattern = "\\_",replacement = " ")
+  if(max(nchar(as.character(res1[1:plot_vars,]$res1)))> discrete_x){
+    res1$res1<-gsub(res1$res1,pattern = "\\_",replacement = " ")
   }
 
-  res$res<-as.character(res$res)
-  pp<-ggplot(res[1:plot_vars,], aes(x= reorder(res, -Freq), y = Freq, fill = res)) +
+  res1$res1<-as.character(res1$res1)
+  pp<-ggplot(res1[1:plot_vars,], aes(x= reorder(res1, -Freq), y = Freq, fill = res1)) +
     geom_histogram( stat="identity") +
     geom_hline(aes(yintercept = permutation*0.5), lty= 1,colour="grey",size=0.6)+
     ylim(0,permutation)+
@@ -93,8 +108,8 @@ best_predictor_cox<-function(target_data, features, status, time,target_data_id 
   # ggsave(pp,filename ="Frequency_of_variables_choosen_by_lasso.pdf",
   #        width =5+0.1*length(plot_vars) ,height =6.5 )
   print(pp)
-  res<-list("res" = res,"plot" = pp)
-  return(res)
+  allres<-list("res" = res1,"plot" = pp, res_list = res)
+  return(allres)
 }
 
 
