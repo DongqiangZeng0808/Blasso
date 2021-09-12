@@ -36,7 +36,13 @@ best_predictor_cox<-function(target_data, features, status, time,target_data_id 
                              plot_vars = 20, color = "steelblue", palette = "Blues",
                              show_progress = TRUE, discrete_x = 20){
 
-  tar_fea<-merge(target_data[,c(target_data_id,status,time)],features,by.x = target_data_id,by.y = features_id,all = F)
+  target_data<-as.data.frame(target_data)
+  colnames(target_data)[which(colnames(target_data)==time)]<-"time"
+  colnames(target_data)[which(colnames(target_data)==status)]<-"status"
+
+  tar_fea<-merge(target_data[,c(target_data_id,"status","time")],features,
+                 by.x = target_data_id,by.y = features_id,all = F)
+
   tar_fea<-tibble:: column_to_rownames(tar_fea,var = target_data_id )
 
   #progress_bar
