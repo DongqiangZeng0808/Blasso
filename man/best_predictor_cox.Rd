@@ -26,13 +26,13 @@ best_predictor_cox(
 
 \item{features}{Data frame contains patient identifier and variables after feature engineering}
 
-\item{status}{column name of survival event}
+\item{status}{column of survival event}
 
-\item{time}{column name of survival time}
+\item{time}{column of survival time}
 
-\item{target_data_id}{column name of phenotype data}
+\item{target_data_id}{identifier of phenotype data}
 
-\item{features_id}{column name of feature matrix}
+\item{features_id}{identifier of feature matrix}
 
 \item{permutation}{times of iteration}
 
@@ -40,7 +40,7 @@ best_predictor_cox(
 
 \item{nfolds}{folds to perform cross validation in LASSO}
 
-\item{color}{default is steelblue}
+\item{color}{default is `steelblue`}
 
 \item{palette}{plotting palette, using `RColorBrewer::display.brewer.all()`}
 
@@ -57,6 +57,7 @@ Using bootstrapping and LASSO algorithm to choose best prognostic features
 \examples{
 data("target")
 data("features")
+res <- best_predictor_cox(target_data = target, features = features,status = "status",time = "time",permutation =100)
 }
 \author{
 Dongqiang Zeng

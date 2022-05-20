@@ -3,7 +3,7 @@
 
 #' Find interactions
 #'
-#' @param input list of variables choosen by the model
+#' @param input list of variables chosen by the model
 #' @param num_target default is 2
 #'
 #' @return
@@ -20,7 +20,7 @@ find_interaction<-function(input, num_target = 2 ){
     res<-combn(x, m = m, simplify = F)
     return(res)
   }
-  res_map<-map(res_list, mycombn)
+  res_map<- purrr:: map(res_list, mycombn)
 
   res_data<-data.frame("variables" = NA, "count" = NA)
   #######################################
@@ -33,7 +33,7 @@ find_interaction<-function(input, num_target = 2 ){
 
       res_target<-data.frame("variables" = NA, "count" = NA)
       target<-as.character(bridge[[i]])
-      res_target$variables<-paste0(target, collapse = "_&_")
+      res_target$variables<-paste0(target, collapse = " & ")
 
       cal_count<-function(list){
         logic<- all(target%in%list)

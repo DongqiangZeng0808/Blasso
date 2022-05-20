@@ -9,8 +9,8 @@
 #'
 #' @param target_data Data frame contains patient identifier, and target_data
 #' @param features Data frame contains patient identifier and variables after feature engineering
-#' @param target_data_id column name of phenotype data
-#' @param features_id column name of feature matrix
+#' @param target_data_id identifier of phenotype data
+#' @param features_id identifier of feature matrix
 #' @param permutation times of iteration
 #' @param propotion proportion of patients in each bootstrapping iteration
 #' @param nfolds folds to perform cross validation in LASSO
@@ -88,7 +88,8 @@ best_predictor_binomial<-function(target_data,response = "response",
   }
 
   if(max(nchar(as.character(res1[1:plot_vars,]$res1)))> discrete_x){
-    res1$res1<-gsub(res1$res1,pattern = "\\_",replacement = " ")
+    res1$res1<-gsub(res1$res1, pattern = "\\_",replacement = " ")
+    # res1$res1<-gsub(res1$res1, pattern = "\\-",replacement = " ")
   }
 
   res1$res1<-as.character(res1$res1)

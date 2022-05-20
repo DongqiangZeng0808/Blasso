@@ -12,14 +12,14 @@
 #' @param target_data Data frame contains patient identifier, survival time and survival event = 0/1
 #' @param features Data frame contains patient identifier and variables after feature engineering
 #' @param permutation times of iteration
-#' @param status column name of survival event
-#' @param time column name of survival time
-#' @param target_data_id column name of phenotype data
-#' @param features_id column name of feature matrix
+#' @param status column of survival event
+#' @param time column of survival time
+#' @param target_data_id identifier of phenotype data
+#' @param features_id identifier of feature matrix
 #' @param propotion proportion of patients in each bootstrapping iteration
 #' @param nfolds folds to perform cross validation in LASSO
 #' @param palette plotting palette, using `RColorBrewer::display.brewer.all()`
-#' @param color default is steelblue
+#' @param color default is `steelblue`
 #' @param show_progress show progress bar
 #' @param discrete_x if maximal character length of variables is larger than discrete_x, label will be discrete
 #' @author Dongqiang Zeng
@@ -29,7 +29,7 @@
 #' @examples
 #' data("target")
 #' data("features")
-# res<-best_predictor_cox(target_data = target, features = features,status = "status",time = "time",permutation =100)
+#' res <- best_predictor_cox(target_data = target, features = features,status = "status",time = "time",permutation =100)
 
 best_predictor_cox<-function(target_data, features, status, time,target_data_id = "ID", features_id ="ID",
                              permutation = 1000, propotion = 0.8, nfolds = 10,

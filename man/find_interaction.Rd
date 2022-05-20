@@ -7,7 +7,7 @@
 find_interaction(input, num_target = 2)
 }
 \arguments{
-\item{input}{list of variables choosen by the model}
+\item{input}{list of variables chosen by the model}
 
 \item{num_target}{default is 2}
 }

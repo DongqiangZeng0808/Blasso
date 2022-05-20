@@ -27,9 +27,9 @@ best_predictor_binomial(
 
 \item{features}{Data frame contains patient identifier and variables after feature engineering}
 
-\item{target_data_id}{column name of phenotype data}
+\item{target_data_id}{identifier of phenotype data}
 
-\item{features_id}{column name of feature matrix}
+\item{features_id}{identifier of feature matrix}
 
 \item{show_progress}{show progress bar}
 
