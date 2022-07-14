@@ -47,9 +47,6 @@ best_predictor_binomial(
 
 \item{discrete_x}{if maximal character length of variables is larger than discrete_x, label will be discrete}
 }
-\value{
-
-}
 \description{
 Using bootstrapping and LASSO algorithm to choose best predictive features
 }

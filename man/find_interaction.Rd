@@ -11,9 +11,6 @@ find_interaction(input, num_target = 2)
 
 \item{num_target}{default is 2}
 }
-\value{
-
-}
 \description{
 Find interactions
 }
