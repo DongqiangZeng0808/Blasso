@@ -65,7 +65,7 @@ best_predictor_cox<-function(target_data, features, status, time,target_data_id 
     fea_matrix<-as.matrix(as.data.frame(tar_fea[index,3:ncol(tar_fea)]))
     fit<-glmnet::cv.glmnet(fea_matrix, rt, family="cox",
                            type.measure = "deviance",
-                           maxit = 1000,nfolds = nfolds,alpha=1)
+                           maxit = 1000, nfolds = nfolds,alpha=1)
 
     coefs <- coef(fit$glmnet.fit, s=fit$lambda.min)
     # active.coef <- coefs[which(coefs[,1]!=0)]
